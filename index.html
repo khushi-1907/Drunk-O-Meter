@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drunk-O-Meter Bar - Track Your Tipsiness!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(20, 20, 40, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 10px;
+        }
+        
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            color: #b0b0b0;
+            font-weight: 700;
+        }
+        
+        /* Bar Shelf Styles */
+        .bar-shelf {
+            background: linear-gradient(180deg, #2c1810 0%, #1a0f08 100%);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 
+                inset 0 5px 15px rgba(0, 0, 0, 0.5),
+                0 10px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-shelf::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 16px;
+            background: linear-gradient(180deg, #3d2418 0%, #2c1810 100%);
+            border-radius: 8px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .drinks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .drink-bottle {
+            background: linear-gradient(145deg, #2a2a3e, #1e1e32);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .drink-bottle:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            background: linear-gradient(145deg, #3a3a4e, #2e2e42);
+        }
+        
+        .drink-bottle:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+        
+        .drink-icon {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 5px;
+            display: block;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        
+        .drink-name {
+            font-weight: 700;
+            color: #d0d0d0;
+            font-size: clamp(0.7rem, 3vw, 0.9rem);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .drink-bottle::after {
+            content: '+1';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .drink-bottle.animate::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        /* Drink List Styles */
+        .drink-list {
+            background: rgba(30, 30, 50, 0.6);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            min-height: 80px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .drink-list h2 {
+            margin-bottom: 12px;
+            color: #e0e0e0;
+            font-size: clamp(1.2rem, 5vw, 1.5rem);
+        }
+        
+        .drink-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .drink-item {
+            background: linear-gradient(145deg, #2a2a3e, #1e1e32);
+            padding: 8px 12px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .drink-emoji {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+        }
+        
+        .drink-info {
+            font-weight: 700;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+        }
+        
+        .remove-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .remove-btn:hover {
+            background: linear-gradient(45deg, #ff5252, #ff7043);
+            transform: scale(1.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #808080;
+        }
+        
+        .empty-state-icon {
+            font-size: clamp(2rem, 8vw, 3rem);
+            margin-bottom: 10px;
+        }
+        
+        /* Result Container Styles */
+        .result-container {
+            background: linear-gradient(135deg, #2a2a3e 0%, #1e1e32 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: fadeIn 0.5s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .drunk-level {
+            font-size: clamp(2.5rem, 12vw, 4rem);
+            margin: 15px 0;
+            animation: bounce 1s ease infinite;
+            filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.5));
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .result-message {
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            line-height: 1.5;
+            color: #d0d0d0;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .disclaimer {
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            color: #808080;
+            margin-top: 15px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            .bar-shelf {
+                padding: 10px;
+            }
+            
+            .drinks-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .drink-bottle {
+                padding: 10px 5px;
+            }
+            
+            .drink-list {
+                padding: 12px;
+            }
+            
+            .result-container {
+                padding: 20px;
+            }
+        }
+        
+        /* Touch-friendly adjustments */
+        @media (hover: none) {
+            .drink-bottle:hover {
+                transform: none;
+            }
+            
+            .drink-bottle:active {
+                transform: scale(0.98);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Drunk-O-Meter Bar</h1>
+            <p class="subtitle">Tap drinks to add them to your tab!</p>
+        </header>
+        
+        <div class="bar-shelf">
+            <div class="drinks-grid">
+                <div class="drink-bottle" data-drink="beer">
+                    <span class="drink-icon">🍺</span>
+                    <span class="drink-name">Beer</span>
+                </div>
+                <div class="drink-bottle" data-drink="wine">
+                    <span class="drink-icon">🍷</span>
+                    <span class="drink-name">Wine</span>
+                </div>
+                <div class="drink-bottle" data-drink="vodka">
+                    <span class="drink-icon">🥃</span>
+                    <span class="drink-name">Vodka</span>
+                </div>
+                <div class="drink-bottle" data-drink="whiskey">
+                    <span class="drink-icon">🥃</span>
+                    <span class="drink-name">Whiskey</span>
+                </div>
+                <div class="drink-bottle" data-drink="rum">
+                    <span class="drink-icon">🍹</span>
+                    <span class="drink-name">Rum</span>
+                </div>
+                <div class="drink-bottle" data-drink="tequila">
+                    <span class="drink-icon">🍸</span>
+                    <span class="drink-name">Tequila</span>
+                </div>
+                <div class="drink-bottle" data-drink="gin">
+                    <span class="drink-icon">🍸</span>
+                    <span class="drink-name">Gin</span>
+                </div>
+                <div class="drink-bottle" data-drink="cocktail">
+                    <span class="drink-icon">🍹</span>
+                    <span class="drink-name">Cocktail</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="drink-list">
+            <h2>Your Drinks Tab</h2>
+            <div class="drink-items" id="drink-items">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🍺</div>
+                    <p>No drinks yet. Tap the bottles above!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <div class="result-title">Your Drunk Level:</div>
+            <div class="drunk-level" id="drunk-level">😌</div>
+            <div class="result-message" id="result-message">You're as sober as a judge. Maybe have another drink?</div>
+            <p class="disclaimer">This is just for fun! Please drink responsibly and never drive under the influence.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const drinkBottles = document.querySelectorAll('.drink-bottle');
+            const drinkItemsContainer = document.getElementById('drink-items');
+            const resultContainer = document.getElementById('result-container');
+            const drunkLevelElement = document.getElementById('drunk-level');
+            const resultMessageElement = document.getElementById('result-message');
+            
+            let drinks = [];
+            
+            // Drink alcohol content (approximate)
+            const drinkAlcoholContent = {
+                beer: 0.05,
+                wine: 0.12,
+                vodka: 0.40,
+                whiskey: 0.40,
+                rum: 0.40,
+                tequila: 0.40,
+                gin: 0.40,
+                cocktail: 0.15
+            };
+            
+            // Drink emojis
+            const drinkEmojis = {
+                beer: '🍺',
+                wine: '🍷',
+                vodka: '🥃',
+                whiskey: '🥃',
+                rum: '🍹',
+                tequila: '🍸',
+                gin: '🍸',
+                cocktail: '🍹'
+            };
+            
+            // Drunk messages
+            const drunkMessages = [
+                { level: 0, emoji: '😌', message: "You're as sober as a judge. Maybe have another drink?" },
+                { level: 1, emoji: '🙂', message: "Just a light buzz. You're still in control!" },
+                { level: 2, emoji: '😊', message: "Feeling good! You're the life of the party!" },
+                { level: 3, emoji: '😄', message: "You're officially tipsy! Your jokes are getting funnier." },
+                { level: 4, emoji: '😜', message: "Whoa, slow down there tiger! You're starting to feel it." },
+                { level: 5, emoji: '🤪', message: "You're drunk! But in a good way. Keep dancing!" },
+                { level: 6, emoji: '😵', message: "You're very drunk. Maybe switch to water?" },
+                { level: 7, emoji: '🤢', message: "You're officially wasted. Call a cab and get home safe!" },
+                { level: 8, emoji: '💀', message: "You're beyond drunk. How are you even reading this?" }
+            ];
+            
+            // Add drink when bottle is clicked
+            drinkBottles.forEach(bottle => {
+                bottle.addEventListener('click', function() {
+                    const drinkType = this.getAttribute('data-drink');
+                    
+                    // Add haptic feedback on supported devices
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
+                    
+                    // Add animation class
+                    this.classList.add('animate');
+                    setTimeout(() => {
+                        this.classList.remove('animate');
+                    }, 300);
+                    
+                    // Add drink
+                    const drink = {
+                        type: drinkType,
+                        alcoholContent: drinkAlcoholContent[drinkType],
+                        emoji: drinkEmojis[drinkType]
+                    };
+                    
+                    drinks.push(drink);
+                    renderDrinks();
+                    updateDrunkLevel();
+                });
+            });
+            
+            // Render drinks
+            function renderDrinks() {
+                if (drinks.length === 0) {
+                    drinkItemsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🍺</div>
+                            <p>No drinks yet. Tap the bottles above!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                drinkItemsContainer.innerHTML = '';
+                
+                drinks.forEach((drink, index) => {
+                    const drinkItem = document.createElement('div');
+                    drinkItem.className = 'drink-item';
+                    
+                    drinkItem.innerHTML = `
+                        <span class="drink-emoji">${drink.emoji}</span>
+                        <span class="drink-info">${drink.type.charAt(0).toUpperCase() + drink.type.slice(1)}</span>
+                        <button class="remove-btn" data-index="${index}">×</button>
+                    `;
+                    
+                    drinkItemsContainer.appendChild(drinkItem);
+                });
+                
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        drinks.splice(index, 1);
+                        renderDrinks();
+                        updateDrunkLevel();
+                    });
+                });
+            }
+            
+            // Update drunk level
+            function updateDrunkLevel() {
+                if (drinks.length === 0) {
+                    resultContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Calculate total alcohol units (simplified calculation)
+                let totalAlcohol = 0;
+                
+                drinks.forEach(drink => {
+                    totalAlcohol += drink.alcoholContent;
+                });
+                
+                // Determine drunk level
+                let drunkLevel = Math.min(Math.floor(totalAlcohol * 4), 8);
+                
+                // Show result
+                const result = drunkMessages[drunkLevel];
+                drunkLevelElement.textContent = result.emoji;
+                resultMessageElement.textContent = result.message;
+                
+                resultContainer.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
